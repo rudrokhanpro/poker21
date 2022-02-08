@@ -2,6 +2,6 @@
 
 # Authors
 
-Steven TAING
-Kassim MOHAMMAD
-Rudro KHAN
+- Steven TAING
+- Kassim MOHAMMAD
+- Rudro KHAN

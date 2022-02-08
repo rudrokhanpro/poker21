@@ -1,0 +1,19 @@
+.loader {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: -100%;
+	left: 0;
+	z-index: 9999;
+	background-color: rgba(0, 0, 0, 0.25);
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	transition: top 1s ease;
+}
+
+.loader--visible {
+	top: 0%;
+}
