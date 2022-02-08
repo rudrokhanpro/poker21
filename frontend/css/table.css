@@ -44,3 +44,8 @@ body {
 	cursor: pointer;
 
 }
+
+.link {
+    text-decoration: none;
+    color: black;
+}
