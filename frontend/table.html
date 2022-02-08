@@ -5,6 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Poker 21</title>
+		<link rel="apple-touch-icon" sizes="180x180" href="./public/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="./public/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="./public/favicon-16x16.png">
+		<link rel="manifest" href="./public/site.webmanifest">
 		<link rel="stylesheet" href="css/global.css" />
 		<link rel="stylesheet" href="css/components.css" />
 		<link rel="stylesheet" href="css/table.css" />
@@ -19,8 +23,16 @@
 					<img id="card" />
 				</div>
 				<div class="player-ui__actions">
-					<input id="count" type="number" value="1" min="1" max="52" required />
-					<button id="draw">Draw</button>
+					<button id="start">Start</button>
+					<input id="count" type="number" value="1" min="1" max="52" required disabled/>
+					<button id="draw" disabled>Draw</button>
+					<button id="cancel" disabled>Cancel</button>
+					<button id="stand" disabled>Stand</button>
+					<button id="restart" disabled>Restart</button>
+				</div>
+				<div>
+					<div>Score</div>
+                	<div id="score">0</div>
 				</div>
 			</div>
 		</main>
