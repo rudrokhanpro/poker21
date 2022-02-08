@@ -45,5 +45,7 @@ drawBtn.onclick = async (event) => {
 
 	document.getElementById('card').setAttribute('src', cards[0].image);
 
+	document.getElementById('logger').setAttribute('value', cards[0].value);
+
 	cards.forEach((card) => player_deck.push(card));
 };
