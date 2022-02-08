@@ -9,9 +9,13 @@
 		<link rel="stylesheet" href="css/components.css" />
 		<link rel="stylesheet" href="css/table.css" />
 		<script src="js/table.js" type="module" defer></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
 	</head>
 	<body>
 		<main>
+			<h1 class="title">Blackjack</h1>
 			<h1 id="greeting"></h1>
 
 			<div class="player-ui">
@@ -19,6 +23,7 @@
 					<img id="card" />
 				</div>
 				<div class="player-ui__actions">
+					<label>Nombre de cartes : </label> 
 					<input id="count" type="number" value="1" min="1" max="52" required />
 					<button id="draw">Draw</button>
 				</div>

@@ -7,7 +7,54 @@
 		padding: 2rem 3rem;
 	}
 }
+body {
+	font-family: 'Poppins', sans-serif;
+	background-color: #EBF5EE;
+	padding: 40px;
 
+}
+.title {
+	text-align: center;
+	font-size: 32px;
+}
+.description {
+	width: 60%;
+	margin-left: 20%;
+}
+
+.hero__body {
+	width : 60%;
+	margin-left: 20%;
+
+}
+
+.username{
+	width : 200px;
+	height: 40px;
+	border-radius : 10px;
+	border : 1px solid rgba(0, 0, 0, 0.205) ;
+	font-size: 15px;
+	padding-left: 10px;
+}
+
+.start{
+	width : 100px;
+	height: 40px;
+	border-radius : 10px;
+	border : 0px solid rgba(0, 0, 0, 0.205) ;
+	font-size: 15px;
+	padding-left: 10px;
+	background-color: transparent;
+}
+
+.start:hover {
+	background-color: #BFD1E5;
+	cursor: pointer;
+
+}
+.form {
+	text-align: center;
+}
 /* main {
 	text-align: center;
 }
