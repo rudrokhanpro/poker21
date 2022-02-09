@@ -37,6 +37,8 @@ console.log(deck_id);
 const startBtn = document.querySelector('#start');
 const drawBtn = document.querySelector('#draw');
 const countInput = document.querySelector('#count');
+const player_deck = [];
+const board_console = document.querySelector("#console");
 const cancelBtn = document.querySelector('#cancel');
 const standBtn = document.querySelector('#stand');
 const restartBtn = document.querySelector('#restart');
@@ -86,6 +88,13 @@ drawBtn.onclick = async (event) => {
 	}
 
 	document.getElementById('card').setAttribute('src', cards[0].image);
+	
+	var e=document.createElement("div");
+	e.innerHTML=`Vous avez eu la carte ${cards[0].value} avec la forme ${cards[0].suit} `;
+	board_console.appendChild(e);
+
+		
+	cards.forEach((card) => player_deck.push(card));
 };
 
 cancelBtn.onclick = async (event) => {
@@ -111,7 +120,7 @@ standBtn.onclick = async (event) => {
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
-    standBtn.disabled = true;
+  standBtn.disabled = true;
 };
 
 restartBtn.onclick = async (event) => {

@@ -13,24 +13,27 @@
 		<link rel="stylesheet" href="css/components.css" />
 		<link rel="stylesheet" href="css/index.css" />
 		<script src="js/index.js" type="module" defer></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
 	</head>
 	<body>
 		<main>
 			<section id="hero" class="hero">
 				<div class="hero__header">
-					<h1>Poker 21</h1>
-					<p>
-						Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos rem
-						voluptatem atque minus sit rerum, quibusdam, nostrum quas ad
-						voluptas magnam ratione perferendis esse nobis placeat corrupti?
-						Eligendi, laborum quis.
+					<h1 class="title">Blackjack</h1>
+					<p class="description">Le Blackjack est un jeu de cartes consistant à se rapprocher le plus possible d’un score de 21 qui est obtenu en
+					additionnant les scores de chaque carte qui sont tirées. Le joueur gagne s’il atteint 21, ou s’il décide de s’arrêter et que la
+					carte suivante est supérieure à 21. Chaque carte vaut sa valeur en point, sauf pour l’As qui vaut 0 point, et le roi, la reine et
+					le valet qui valent 10 points chacun.
 					</p>
 				</div>
 
 				<div class="hero__body">
-					<form id="game-form" class="form">
-						<input type="text" id="username" placeholder="Username" />
-						<button type="submit" id="start-game">Start game</button>
+					<form id="game-form" class="form" class="form">
+						<label>Entrez votre prénom : </label> 
+						<input type="text" id="username" placeholder="Username" class="username"/>
+						<button type="submit" id="start-game" class="start">Commencer</button>
 					</form>
 				</div>
 			</section>
