@@ -43,7 +43,7 @@ const cancelBtn = document.querySelector('#cancel');
 const standBtn = document.querySelector('#stand');
 const restartBtn = document.querySelector('#restart');
 const scoreDiv = document.querySelector('#score');
-
+const numberOfCard = 52;
 const pile = "player";
 let player_deck = [];
 
