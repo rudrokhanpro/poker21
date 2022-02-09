@@ -53,6 +53,5 @@ drawBtn.onclick = async (event) => {
 	e.innerHTML="Element n°"+ value;
 	p.appendChild(e);
 
-		
 	cards.forEach((card) => player_deck.push(card));
 };
