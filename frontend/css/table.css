@@ -9,3 +9,11 @@
 
 #draw {
 }
+
+.console {
+	margin-top: 20px;
+	background-color: bisque;
+	width : 500px;
+	padding: 20px;
+	font-size: 13px;
+}
