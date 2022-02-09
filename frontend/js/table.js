@@ -45,5 +45,13 @@ drawBtn.onclick = async (event) => {
 
 	document.getElementById('card').setAttribute('src', cards[0].image);
 
+	
+	var value = document.getElementById('logger').innerText= "Vous avez eu la carte " + ('value', cards[0].value);
+
+	var p=document.getElementById("console");
+	var e=document.createElement("div");
+	e.innerHTML="Element n°"+ value;
+	p.appendChild(e);
+
 	cards.forEach((card) => player_deck.push(card));
 };
