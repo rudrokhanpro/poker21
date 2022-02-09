@@ -37,7 +37,6 @@ console.log(deck_id);
 const startBtn = document.querySelector('#start');
 const drawBtn = document.querySelector('#draw');
 const countInput = document.querySelector('#count');
-const player_deck = [];
 const board_console = document.querySelector("#console");
 const cancelBtn = document.querySelector('#cancel');
 const standBtn = document.querySelector('#stand');
