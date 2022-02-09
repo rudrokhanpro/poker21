@@ -36,6 +36,7 @@ console.log(deck_id);
 const drawBtn = document.querySelector('#draw');
 const countInput = document.querySelector('#count');
 const player_deck = [];
+const board_console = document.querySelector("#console");
 
 drawBtn.onclick = async (event) => {
 	const count = countInput.value;
@@ -44,14 +45,11 @@ drawBtn.onclick = async (event) => {
 	console.log(cards);
 
 	document.getElementById('card').setAttribute('src', cards[0].image);
-
 	
-	var value = document.getElementById('logger').innerText= "Vous avez eu la carte " + ('value', cards[0].value);
-
-	var p=document.getElementById("console");
 	var e=document.createElement("div");
-	e.innerHTML="Element n°"+ value;
-	p.appendChild(e);
+	e.innerHTML=`Vous avez eu la carte ${cards[0].value} avec la forme ${cards[0].suit} `;
+	board_console.appendChild(e);
 
+		
 	cards.forEach((card) => player_deck.push(card));
 };

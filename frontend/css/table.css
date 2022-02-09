@@ -13,10 +13,13 @@
 
 .console {
 	margin-top: 20px;
-	background-color: bisque;
+	background-color: #83a18c;
 	width : 500px;
 	padding: 20px;
 	font-size: 13px;
+	border-radius : 10px;
+
+} 
 body {
 	font-family: 'Poppins', sans-serif;
 	background-color: #EBF5EE;
