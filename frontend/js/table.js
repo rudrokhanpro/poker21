@@ -38,6 +38,7 @@ const board_console = document.querySelector("#console");
 // Texts
 const scoreEl = document.querySelector('#score');
 const remainingEl = document.querySelector('#remaining');
+const statusEl = document.querySelector('#status')
 
 // Inputs
 const countInput = document.querySelector('#count');
@@ -76,7 +77,21 @@ let lastAction;
 }
 
 // listeners
-window.onload = async function () {};
+window.onload = async function () {
+	if(window.navigator.onLine) {
+		handleOnline();
+	} else {
+		handleOffline();
+	}
+};
+window.addEventListener('online', function(e) { 
+	handleOnline();
+	updateConsoleLog('La connexion a été établie.');
+});
+window.addEventListener('offline', function(e) { 
+	handleOffline();
+	updateConsoleLog('La connexion a été perdue.');
+});
 
 startBtn.onclick = onStart;
 drawBtn.onclick = onDraw;
@@ -121,17 +136,20 @@ async function onStart() {
 	console.log(deck_id);
 
 	lastAction = GAME_ACTION.START;
-	const { cards, remaining  } = await drawCard(deck_id, { count: 2 });
+	const { cards, remaining  } = await drawCard(deck_id, { count: 2 })
+		.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
 	
-	updatePlayerDeck(cards);
-	updateDrawnCards(cards);
-	setRemaining(remaining);
-	setScore(getPlayerScore());
-	
-	startBtn.disabled = true;
-	drawBtn.disabled = false;
-	countInput.disabled = false;
-	standBtn.disabled = false;
+	if(cards) {
+		updatePlayerDeck(cards);
+		updateDrawnCards(cards);
+		setRemaining(remaining);
+		setScore(getPlayerScore());
+		
+		startBtn.disabled = true;
+		drawBtn.disabled = false;
+		countInput.disabled = false;
+		standBtn.disabled = false;
+	}
 }
 
 async function onDraw() {
@@ -151,6 +169,7 @@ async function onDraw() {
 			cancelBtn.disabled = true
 			restartBtn.disabled = false;
 			drawBtn.disabled = false;
+			window.navigator.vibrate(200);		
 			return result;
 		})
 		.catch((err) => {
@@ -159,7 +178,11 @@ async function onDraw() {
 			}
 			cancelBtn.disabled = true
 			drawBtn.disabled = false;
-			alert("Draw cancelled by user");
+			if(lastAction === GAME_ACTION.CANCEL) {
+				updateConsoleLog('Vous avez annuler le tirage.')
+			} else {
+				updateConsoleLog('Une erreur réseau est survenue.')
+			}
 			return err;
 		});
 
@@ -189,20 +212,25 @@ async function onCancel() {
 async function onStand() {
 	lastAction = GAME_ACTION.STAND;
 
-	abortCtrl = new AbortController();
-
-	const { cards, remaining } = await drawCard(deck_id, { count: 1 }, abortCtrl);
+	const { cards, remaining } = await drawCard(deck_id, { count: 1 })
+		.then((result) => {
+			window.navigator.vibrate(200);		
+			return result;
+		})
+		.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
 	
-	updatePlayerDeck(cards);
-	updateDrawnCards(cards);
-
-	const score = getPlayerScore();
-	setScore(`${scoreEl.innerHTML} (${score})`);
-
-	if(score > 21) {
-		handleWin();
-	} else {
-		handleLose();
+	if(cards) {
+		updatePlayerDeck(cards);
+		updateDrawnCards(cards);
+	
+		const score = getPlayerScore();
+		setScore(`${scoreEl.innerHTML} (${score})`);
+	
+		if(score > 21) {
+			handleWin();
+		} else {
+			handleLose();
+		}
 	}
 }
 
@@ -231,9 +259,10 @@ async function onRestart() {
 	const cardCodes = [];
 
 	cards.forEach((card) => {
+		const logEntry = `Vous avez tirer la carte : ${card.value} ${card.suit}`;
 		cardCodes.push(card.code);
 		player_deck.push(card);
-		updateConsoleLog(card);
+		updateConsoleLog(logEntry);
 	});
 
 	await addToPile(deck_id, pileName, { cards: cardCodes });
@@ -257,17 +286,18 @@ async function onRestart() {
 }
 
 /**
- * Add a new log entry when a card is drawn
- * @param {*} card
+ * Add a new log entry in the console container
+ * @param {*} text
  */
- function updateConsoleLog(card) {
+ function updateConsoleLog(text) {
 	const log = document.createElement("div");
-	log.textContent = `Vous avez tirer la carte : ${card.value} ${card.suit}`;
+	log.textContent = text;
 	board_console.appendChild(log);
  }
 
 function handleWin() {
-	alert("You won !");
+	window.navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
+	updateConsoleLog('Vous avez gagné !');
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
@@ -276,7 +306,8 @@ function handleWin() {
 }
 
 function handleLose() {
-	alert("You lost :(");
+	window.navigator.vibrate([1000]);
+	updateConsoleLog('Vous avez perdu.');
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
@@ -309,4 +340,14 @@ function getCardValue(value) {
 		default:
 			return Number.parseInt(value);
 	}
+}
+
+function handleOnline() {
+	statusEl.textContent = 'En ligne';
+	statusEl.className = 'status--on';
+}
+
+function handleOffline() {
+	statusEl.textContent = 'Hors ligne';
+	statusEl.className = 'status--off';
 }
