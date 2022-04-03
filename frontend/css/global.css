@@ -18,6 +18,8 @@ body {
 }
 
 main {
+	display: flex;
+	flex-direction: column;
 	padding: 40px;
 	height: 100%;
 }
@@ -34,4 +36,16 @@ button {
 button:hover:not([disabled]) {
 	background-color: #BFD1E5;
 	cursor: pointer;
+}
+
+@media screen and (max-width: 640px) {
+	button {
+		padding: 0.5rem;
+		width: 50px;
+		font-size: 10px;
+	}
+
+	label {
+		display: none;
+	}
 }
