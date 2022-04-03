@@ -31,7 +31,7 @@
 				</div>
 				<div class="player-ui__actions">
 					<button id="start">Start</button>
-          <label>Nombre de cartes à tirer: </label> 
+          			<label>Nombre de cartes à tirer: </label> 
 					<input id="count" type="number" value="1" min="1" max="50" required disabled/>
 					<button id="draw" disabled>Draw</button>
 					<button id="cancel" disabled>Cancel</button>
@@ -43,12 +43,11 @@
                 	<div id="score">0</div>
 				</div>
 			</div>
-			<div class="console" id="console">
-				<div>
-					Statut : <span id="status"></span>
-				</div>
-				<h3>Console :</h3> 
-				<span id="logger"></span>
+			<div id="console">
+				<div>Statut : <span id="status"></span></div>
+				<h3>Console :</h3>
+				<div id="logger"></div>
+				<!-- <textarea id="logger" readonly></textarea> -->
 			</div>
 		</main>
 	</body>

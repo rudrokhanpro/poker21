@@ -2,6 +2,10 @@
 }
 
 .player-ui .player-ui__deck {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
 }
 
 .player-ui .player-ui__actions {
@@ -11,27 +15,38 @@
 
 #drawn-cards {
     display: flex;
+	flex-wrap: wrap;
     gap: 1rem;
+	justify-items: center;
+	align-items: center;
+	width: 100%;
 }
 
 #draw {
 }
 
 
-.console {
+#console {
+	display: flex;
+	flex-direction: column;
 	margin-top: 20px;
 	background-color: #83a18c;
-	width : 500px;
+	width : 100%;
+	height: 30%;
 	padding: 20px;
 	font-size: 13px;
 	border-radius : 10px;
-
-} 
-body {
-	font-family: 'Poppins', sans-serif;
-	background-color: #EBF5EE;
-    padding: 40px;
 }
+
+#logger {
+	width: 100%;
+	padding: 10px;
+	flex: 1 1 auto;
+	background-color: rgba(255, 255, 255, 0.11);
+	overflow-y: scroll;
+	scrollbar-width: thin;
+}
+
 .title {
 	text-align: center;
 	font-size: 32px;
