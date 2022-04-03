@@ -24,132 +24,279 @@
 // 	console.log('New player join !', data);
 // });
 
-import Loader from './components/loader.js';
+import Card from './components/table/card.js';
 import { newShuffle, drawCard, restartGame, addToPile } from './utils/api.js';
+import { GAME_ACTION } from './utils/constants.js';
 
-const loader = new Loader('loader');
-let abortCtrl;
 
-const { deck_id } = await newShuffle({ deck_count: 1 });
 
-console.log(deck_id);
+// Containers
+const deckEl = document.querySelector('#deck');
+const drawnCardsEl = document.querySelector('#drawn-cards');
+const board_console = document.querySelector("#console");
 
+// Texts
+const scoreEl = document.querySelector('#score');
+const remainingEl = document.querySelector('#remaining');
+
+// Inputs
+const countInput = document.querySelector('#count');
+
+// Buttons
 const startBtn = document.querySelector('#start');
 const drawBtn = document.querySelector('#draw');
-const countInput = document.querySelector('#count');
-const board_console = document.querySelector("#console");
 const cancelBtn = document.querySelector('#cancel');
 const standBtn = document.querySelector('#stand');
 const restartBtn = document.querySelector('#restart');
-const scoreDiv = document.querySelector('#score');
 
-const pile = "player";
-let player_deck = [];
+// Vars
+let deck_id;
+const pileName = "player";
+const player_deck = [];
+let abortCtrl;
+let lastAction;
 
-startBtn.onclick = async (event) => {
-	abortCtrl = new AbortController();
-	
-	const count = 2;
-	const { success, cards } = await drawCard(deck_id, abortCtrl, { count });
+// Variables (Selectors and then actual variables)
+// util functions
+
+/**
+ * Updates remaining count element's content
+ * @param {string} value Score value 
+ */
+ function setRemaining(value = "") {
+	remainingEl.textContent = value;
+}
+
+/**
+ * Updates score element's content
+ * @param {string} value Score value 
+ */
+ function setScore(value = "") {
+	scoreEl.textContent = value;
+}
+
+// listeners
+window.onload = async function () {};
+
+startBtn.onclick = onStart;
+drawBtn.onclick = onDraw;
+cancelBtn.onclick = onCancel;
+standBtn.onclick = onStand;
+restartBtn.onclick = onRestart;
+
+/**
+ * Handle keybord event for D,C,S,R,ENTER
+ */
+window.addEventListener("keypress", (event) => {
+	switch(event.code) {
+		case "KeyD" :
+			if(lastAction === GAME_ACTION.START || lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL)
+				onDraw();
+			break;
+		case "KeyC" :
+			if(lastAction === GAME_ACTION.DRAW)
+				onCancel();
+			break;
+		case "KeyS" :
+			if(lastAction === GAME_ACTION.START ||lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL)
+				onStand();
+			break;
+		case "KeyR" :
+			if(lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL || lastAction === GAME_ACTION.STAND)
+				onRestart();
+			break;
+		case "Enter" :
+			if(!lastAction || lastAction === GAME_ACTION.RESTART)
+				onStart();
+			break;
+		default :
+			break;
+	}
+});
+
+// Handlers
+async function onStart() {
+	const newDeck = await newShuffle({ deck_count: 1 });
+	deck_id = newDeck.deck_id;
+	console.log(deck_id);
+
+	lastAction = GAME_ACTION.START;
+	const { cards, remaining  } = await drawCard(deck_id, { count: 2 });
 	
 	updatePlayerDeck(cards);
-
-	scoreDiv.innerHTML = checkScore();
+	updateDrawnCards(cards);
+	setRemaining(remaining);
+	setScore(getPlayerScore());
 	
 	startBtn.disabled = true;
 	drawBtn.disabled = false;
 	countInput.disabled = false;
 	standBtn.disabled = false;
-	restartBtn.disabled = false;
-};
+}
 
-drawBtn.onclick = async (event) => {
-    cancelBtn.disabled = false;
-	abortCtrl = new AbortController();
-	
-	const count = countInput.value;
-	const { success, cards } = await drawCard(deck_id, abortCtrl, { count })
-		.then((result) => {
-			cancelBtn.disabled = true
-			return result;
-		});
-
-	updatePlayerDeck(cards);
-
-	let score = checkScore();
-	scoreDiv.innerHTML = score;
-	
-	if(score > 21) {
-		console.log("LOSE");
-		countInput.disabled = true;
-		drawBtn.disabled = true;
-        standBtn.disabled = true;
+async function onDraw() {
+	if (deck_id === undefined) {
+		alert("Deck ID not found, cannot draw");
+		return;
 	}
 
-	document.getElementById('card').setAttribute('src', cards[0].image);
-	
-	var e=document.createElement("div");
-	e.innerHTML=`Vous avez eu la carte ${cards[0].value} avec la forme ${cards[0].suit} `;
-	board_console.appendChild(e);
-
-		
-	cards.forEach((card) => player_deck.push(card));
-};
-
-cancelBtn.onclick = async (event) => {
-	cancelBtn.disabled = true;
-	abortCtrl.abort();
-};
-
-standBtn.onclick = async (event) => {
+	lastAction = GAME_ACTION.DRAW;
+	drawBtn.disabled = true;
+	cancelBtn.disabled = false;
 	abortCtrl = new AbortController();
 	
-	const count = 1;
-	const { success, cards } = await drawCard(deck_id, abortCtrl, { count });
+	const { value: count } = countInput;
+	const { cards, remaining } = await drawCard(deck_id, { count }, abortCtrl)
+		.then((result) => {
+			cancelBtn.disabled = true
+			restartBtn.disabled = false;
+			drawBtn.disabled = false;
+			return result;
+		})
+		.catch((err) => {
+			if(player_deck.length > 2) {
+				restartBtn.disabled = false;
+			}
+			cancelBtn.disabled = true
+			drawBtn.disabled = false;
+			alert("Draw cancelled by user");
+			return err;
+		});
+
+	if(cards) {
+		updatePlayerDeck(cards);
+		updateDrawnCards(cards);
+		setRemaining(remaining);
+	
+		const score = getPlayerScore();
+		setScore(score);
+		
+		if (score === 21) {
+			handleWin();
+		} else if (score > 21) {
+			handleLose();
+		}
+	}
+}
+
+async function onCancel() {
+	lastAction = GAME_ACTION.CANCEL;
+
+	cancelBtn.disabled = true;
+	abortCtrl.abort();
+}
+
+async function onStand() {
+	lastAction = GAME_ACTION.STAND;
+
+	abortCtrl = new AbortController();
+
+	const { cards, remaining } = await drawCard(deck_id, { count: 1 }, abortCtrl);
 	
 	updatePlayerDeck(cards);
+	updateDrawnCards(cards);
 
-	let score = checkScore();
-	scoreDiv.innerHTML = `${scoreDiv.innerHTML} (${score})`;
+	const score = getPlayerScore();
+	setScore(`${scoreEl.innerHTML} (${score})`);
 
-	if(score > 21)
-		console.log("WIN");
-	else
-		console.log("LOSE");
+	if(score > 21) {
+		handleWin();
+	} else {
+		handleLose();
+	}
+}
 
-	countInput.disabled = true;
-	drawBtn.disabled = true;
-  standBtn.disabled = true;
-};
+async function onRestart() {
+	lastAction = GAME_ACTION.RESTART;
 
-restartBtn.onclick = async (event) => {
 	await restartGame(deck_id);
+	
 	startBtn.disabled = false;
 	countInput.disabled = true;
     drawBtn.disabled = true;
     standBtn.disabled = true;
 	restartBtn.disabled = true;
-	player_deck = [];
-	scoreDiv.innerHTML = "0";
-};
+	player_deck.length = 0;
+	
+	setScore("0");
+	setRemaining("");
+	removeDrawnCards();
+}
 
-
-async function updatePlayerDeck(cards) {
+/**
+ * Add cards to player's pile
+ * @param {*} cards Array of cards
+ */
+ async function updatePlayerDeck(cards) {
 	const cardCodes = [];
+
 	cards.forEach((card) => {
 		cardCodes.push(card.code);
 		player_deck.push(card);
+		updateConsoleLog(card);
 	});
-	await addToPile(deck_id, pile, { cards: cardCodes });
+
+	await addToPile(deck_id, pileName, { cards: cardCodes });
 }
 
-function checkScore() {
+/**
+ * Display given cards in the drawn cards container
+ * @param {*} cards 
+ */
+ function updateDrawnCards(cards) {
+	cards.forEach((card) => {
+		new Card(card, drawnCardsEl).display();
+	});
+}
+
+/**
+ * Remove every displayed cards in the drawn cards container
+ */
+ function removeDrawnCards() {
+	drawnCardsEl.replaceChildren();
+}
+
+/**
+ * Add a new log entry when a card is drawn
+ * @param {*} card
+ */
+ function updateConsoleLog(card) {
+	const log = document.createElement("div");
+	log.textContent = `Vous avez tirer la carte : ${card.value} ${card.suit}`;
+	board_console.appendChild(log);
+ }
+
+function handleWin() {
+	alert("You won !");
+
+	countInput.disabled = true;
+	drawBtn.disabled = true;
+	cancelBtn.disabled = true;
+	standBtn.disabled = true;
+}
+
+function handleLose() {
+	alert("You lost :(");
+
+	countInput.disabled = true;
+	drawBtn.disabled = true;
+	cancelBtn.disabled = true;
+	standBtn.disabled = true;
+	restartBtn.disabled = false;
+}
+
+function getPlayerScore() {
 	let sum = player_deck.reduce((prev, next) => {
 		return prev + getCardValue(next.value);
 	}, 0);
 	return sum;
 }
 
+/**
+ * Returns a card numeric value according to it's value
+ * @param {string} value Card value
+ * @returns 
+ */
 function getCardValue(value) {
 	switch(value) {
 		case "KING":

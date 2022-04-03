@@ -13,3 +13,17 @@ body {
 	margin: 0;
 	padding: 0;
 }
+
+button {
+	padding: 1rem;
+	width : 100px;
+	border-radius : 10px;
+	font-size: 15px;
+	padding-left: 10px;
+	background-color: transparent;
+}
+
+button:hover:not([disabled]) {
+	background-color: #BFD1E5;
+	cursor: pointer;
+}

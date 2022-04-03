@@ -17,15 +17,18 @@ export const newShuffle = async (params) => {
 	}
 };
 
-export const drawCard = async (deck_id, abortCtrl, params) => {
+export const drawCard = async (deck_id, params, abortController) => {
 	if (!deck_id) throw new Error('DeckOfCardError: Missing deck_id');
 
 	const url = API_URL + `/deck/${deck_id}/draw`;
 	const reqURL = createURL(url, params);
 	const reqConfig = {
 		method: 'GET',
-		signal: abortCtrl.signal
 	};
+
+	if (abortController instanceof AbortController) {
+		reqConfig.signal = abortController.signal
+	}
 
 	try {
 		const res = await fetch(reqURL, reqConfig);
