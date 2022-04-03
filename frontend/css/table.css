@@ -50,3 +50,13 @@ body {
     text-decoration: none;
     color: black;
 }
+
+.status--on {
+	font-weight: bold;
+	color: green;
+}
+
+.status--off {
+	font-weight: bold;
+	color: red;
+}
