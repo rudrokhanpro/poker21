@@ -25,7 +25,7 @@
 // });
 
 import Card from './components/table/card.js';
-import { newShuffle, drawCard, restartGame, addToPile } from './utils/api.js';
+import { newShuffle, drawCard, restartGame, addToPile, checkPile } from './utils/api.js';
 import { GAME_ACTION } from './utils/constants.js';
 
 
@@ -33,7 +33,7 @@ import { GAME_ACTION } from './utils/constants.js';
 // Containers
 const deckEl = document.querySelector('#deck');
 const drawnCardsEl = document.querySelector('#drawn-cards');
-const board_console = document.querySelector("#console");
+const loggerEl = document.querySelector("#logger");
 
 // Texts
 const scoreEl = document.querySelector('#score');
@@ -52,8 +52,8 @@ const restartBtn = document.querySelector('#restart');
 
 // Vars
 let deck_id;
-const pileName = "player";
-const player_deck = [];
+const pileName = 'player';
+let player_deck = [];
 let abortCtrl;
 let lastAction;
 
@@ -64,7 +64,7 @@ let lastAction;
  * Updates remaining count element's content
  * @param {string} value Score value 
  */
- function setRemaining(value = "") {
+ function setRemaining(value = '') {
 	remainingEl.textContent = value;
 }
 
@@ -72,16 +72,60 @@ let lastAction;
  * Updates score element's content
  * @param {string} value Score value 
  */
- function setScore(value = "") {
+ function setScore(value = '') {
 	scoreEl.textContent = value;
 }
 
 // listeners
 window.onload = async function () {
+	const current_id = localStorage.getItem('deck_id');
+	
 	if(window.navigator.onLine) {
 		handleOnline();
 	} else {
 		handleOffline();
+	}
+
+	if(current_id) {
+		deck_id = current_id;
+		const { piles, remaining}  = await checkPile(deck_id, pileName)
+			.then((response) => {
+				if(response.error) {
+					createNewDeck();
+				}
+				return response;
+			})
+			.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
+		
+		if(piles && piles[pileName]) {
+			const cards = piles[pileName].cards;
+			const lastSessionAction = localStorage.getItem('lastAction');
+			lastAction = GAME_ACTION[lastSessionAction];
+			
+			updatePlayerDeck(cards);
+			updateDrawnCards(cards);
+			setRemaining(remaining);
+			
+			const score = getPlayerScore(); 
+			setScore(score);
+
+			if(remaining < 50) {
+				restartBtn.disabled = false;
+			}
+
+			if(score < 21) {
+				drawBtn.disabled = false;
+				countInput.disabled = false;
+				standBtn.disabled = false;
+			} else if ( score === 21) {
+				handleWin();
+			} else {
+				handleLose();
+			}
+			startBtn.disabled = true;
+		}
+	} else {
+		createNewDeck();
 	}
 };
 window.addEventListener('online', function(e) { 
@@ -102,25 +146,25 @@ restartBtn.onclick = onRestart;
 /**
  * Handle keybord event for D,C,S,R,ENTER
  */
-window.addEventListener("keypress", (event) => {
+window.addEventListener('keypress', (event) => {
 	switch(event.code) {
-		case "KeyD" :
+		case 'KeyD' :
 			if(lastAction === GAME_ACTION.START || lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL)
 				onDraw();
 			break;
-		case "KeyC" :
+		case 'KeyC' :
 			if(lastAction === GAME_ACTION.DRAW)
 				onCancel();
 			break;
-		case "KeyS" :
-			if(lastAction === GAME_ACTION.START ||lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL)
+		case 'KeyS' :
+			if(getPlayerScore() < 21 && (lastAction === GAME_ACTION.START ||lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL))
 				onStand();
 			break;
-		case "KeyR" :
+		case 'KeyR' :
 			if(lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL || lastAction === GAME_ACTION.STAND)
 				onRestart();
 			break;
-		case "Enter" :
+		case 'Enter' :
 			if(!lastAction || lastAction === GAME_ACTION.RESTART)
 				onStart();
 			break;
@@ -131,11 +175,9 @@ window.addEventListener("keypress", (event) => {
 
 // Handlers
 async function onStart() {
-	const newDeck = await newShuffle({ deck_count: 1 });
-	deck_id = newDeck.deck_id;
-	console.log(deck_id);
-
 	lastAction = GAME_ACTION.START;
+	localStorage.setItem('lastAction', 'start'.toUpperCase());
+
 	const { cards, remaining  } = await drawCard(deck_id, { count: 2 })
 		.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
 	
@@ -149,34 +191,41 @@ async function onStart() {
 		drawBtn.disabled = false;
 		countInput.disabled = false;
 		standBtn.disabled = false;
+
+		if(remaining === '0') {
+			drawBtn.disabled = true;
+			restartBtn.disabled = false;
+		}
 	}
 }
 
 async function onDraw() {
 	if (deck_id === undefined) {
-		alert("Deck ID not found, cannot draw");
+		alert('Deck ID not found, cannot draw');
 		return;
 	}
 
 	lastAction = GAME_ACTION.DRAW;
+	localStorage.setItem('lastAction', 'draw'.toUpperCase());
+
 	drawBtn.disabled = true;
 	cancelBtn.disabled = false;
 	abortCtrl = new AbortController();
 	
 	const { value: count } = countInput;
 	const { cards, remaining } = await drawCard(deck_id, { count }, abortCtrl)
-		.then((result) => {
-			cancelBtn.disabled = true
-			restartBtn.disabled = false;
+		.then((response) => {
 			drawBtn.disabled = false;
+			cancelBtn.disabled = true;
+			restartBtn.disabled = false;
 			window.navigator.vibrate(200);		
-			return result;
+			return response;
 		})
 		.catch((err) => {
 			if(player_deck.length > 2) {
 				restartBtn.disabled = false;
 			}
-			cancelBtn.disabled = true
+			cancelBtn.disabled = true;
 			drawBtn.disabled = false;
 			if(lastAction === GAME_ACTION.CANCEL) {
 				updateConsoleLog('Vous avez annuler le tirage.')
@@ -190,9 +239,13 @@ async function onDraw() {
 		updatePlayerDeck(cards);
 		updateDrawnCards(cards);
 		setRemaining(remaining);
-	
+
 		const score = getPlayerScore();
-		setScore(score);
+		setScore(score);			
+
+		if(remaining === '0') {
+			drawBtn.disabled = true;
+		}
 		
 		if (score === 21) {
 			handleWin();
@@ -204,6 +257,7 @@ async function onDraw() {
 
 async function onCancel() {
 	lastAction = GAME_ACTION.CANCEL;
+	localStorage.setItem('lastAction', 'cancel'.toUpperCase());
 
 	cancelBtn.disabled = true;
 	abortCtrl.abort();
@@ -211,11 +265,12 @@ async function onCancel() {
 
 async function onStand() {
 	lastAction = GAME_ACTION.STAND;
+	localStorage.setItem('lastAction', 'stand'.toUpperCase());
 
 	const { cards, remaining } = await drawCard(deck_id, { count: 1 })
-		.then((result) => {
+		.then((response) => {
 			window.navigator.vibrate(200);		
-			return result;
+			return response;
 		})
 		.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
 	
@@ -236,6 +291,7 @@ async function onStand() {
 
 async function onRestart() {
 	lastAction = GAME_ACTION.RESTART;
+	localStorage.setItem('lastAction', 'restart'.toUpperCase());
 
 	await restartGame(deck_id);
 	
@@ -246,9 +302,18 @@ async function onRestart() {
 	restartBtn.disabled = true;
 	player_deck.length = 0;
 	
-	setScore("0");
-	setRemaining("");
+	setScore('0');
+	setRemaining('');
 	removeDrawnCards();
+}
+
+/**
+ * Create a new deck and store its id in localstorage
+ */
+async function createNewDeck() {
+	const newDeck = await newShuffle({ deck_count: 1 });
+	deck_id = newDeck.deck_id;
+	localStorage.setItem('deck_id', deck_id);
 }
 
 /**
@@ -290,10 +355,11 @@ async function onRestart() {
  * @param {*} text
  */
  function updateConsoleLog(text) {
-	const log = document.createElement("div");
+	const log = document.createElement('div');
 	log.textContent = text;
-	board_console.appendChild(log);
- }
+	loggerEl.appendChild(log);
+	loggerEl.scrollTop = loggerEl.scrollHeight - loggerEl.clientHeight;
+}
 
 function handleWin() {
 	window.navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
@@ -303,6 +369,7 @@ function handleWin() {
 	drawBtn.disabled = true;
 	cancelBtn.disabled = true;
 	standBtn.disabled = true;
+	restartBtn.disabled = false;
 }
 
 function handleLose() {
@@ -330,12 +397,12 @@ function getPlayerScore() {
  */
 function getCardValue(value) {
 	switch(value) {
-		case "KING":
-		case "QUEEN": 
-		case "JACK":
-		case "0":
+		case 'KING':
+		case 'QUEEN': 
+		case 'JACK':
+		case '0':
 			return 10;
-		case "ACE":
+		case 'ACE':
 			return 0;
 		default:
 			return Number.parseInt(value);

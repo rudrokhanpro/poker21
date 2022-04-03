@@ -24,6 +24,13 @@
 }
 
 .card {
+	width: 10%;
+}
+
+@media screen and (max-width: 640px) {
+	.card {
+		width: 33%;
+	}
 }
 
 .card--visible {
@@ -34,6 +41,7 @@
 		var(--card-timing-function) both;
 	animation: flip-hor-top var(--card-anim-duraton) var(--card-timing-function)
 		both;
+	width: 100%;
 }
 
 @-webkit-keyframes flip-hor-top {

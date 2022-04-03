@@ -82,7 +82,7 @@ export const checkPile = async (deck_id,pile) => {
 	};
 
 	try {
-		const res = await fetch(reqURL, reqConfig);
+		const res = await fetch(url, reqConfig);
 		return res.json();
 	} catch (err) {
 		throw err;
