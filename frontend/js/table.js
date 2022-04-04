@@ -34,6 +34,19 @@ import { GAME_ACTION } from './utils/constants.js';
 const deckEl = document.querySelector('#deck');
 const drawnCardsEl = document.querySelector('#drawn-cards');
 const loggerEl = document.querySelector("#logger");
+const modalEl = document.querySelector("#myModal");
+const modalLoseEl = document.querySelector("#myModalLose");
+
+var span = document.getElementsByClassName("close")[0];
+span.onclick = function() {
+	modalEl.style.display = "none";
+  }
+
+var spanLose = document.getElementsByClassName("closeLose")[0];
+  spanLose.onclick = function() {
+	  modalLoseEl.style.display = "none";
+	}
+
 
 // Texts
 const scoreEl = document.querySelector('#score');
@@ -106,22 +119,34 @@ window.onload = async function () {
 			updateDrawnCards(cards);
 			setRemaining(remaining);
 			
-			const score = getPlayerScore(); 
-			setScore(score);
+			let score = getPlayerScore();
+			if(lastAction === GAME_ACTION.STAND) {
+				let realScore = score - getCardValue(cards.pop().value);
+				setScore(realScore);
+			
+				if(score <= 21) {
+					handleLose();
+				} else {
+					handleWin();
+				}
+			} else {
+				setScore(score);
+				
+				if(score < 21) {
+					drawBtn.disabled = false;
+					countInput.disabled = false;
+					standBtn.disabled = false;
+				} else if ( score === 21) {
+					handleWin();
+				} else {
+					handleLose();
+				}
+			}
 
 			if(remaining < 50) {
 				restartBtn.disabled = false;
 			}
 
-			if(score < 21) {
-				drawBtn.disabled = false;
-				countInput.disabled = false;
-				standBtn.disabled = false;
-			} else if ( score === 21) {
-				handleWin();
-			} else {
-				handleLose();
-			}
 			startBtn.disabled = true;
 		}
 	} else {
@@ -277,9 +302,9 @@ async function onStand() {
 	if(cards) {
 		updatePlayerDeck(cards);
 		updateDrawnCards(cards);
-	
+		setRemaining(remaining);
+		
 		const score = getPlayerScore();
-		setScore(`${scoreEl.innerHTML} (${score})`);
 	
 		if(score > 21) {
 			handleWin();
@@ -364,6 +389,7 @@ async function createNewDeck() {
 function handleWin() {
 	window.navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
 	updateConsoleLog('Vous avez gagné !');
+	delay(1100).then(() => modalEl.style.display = "block");
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
@@ -375,6 +401,7 @@ function handleWin() {
 function handleLose() {
 	window.navigator.vibrate([1000]);
 	updateConsoleLog('Vous avez perdu.');
+	delay(1000).then(() => modalLoseEl.style.display = "block");
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
@@ -418,3 +445,7 @@ function handleOffline() {
 	statusEl.textContent = 'Hors ligne';
 	statusEl.className = 'status--off';
 }
+
+function delay(time) {
+	return new Promise(resolve => setTimeout(resolve, time));
+  }
