@@ -1,47 +1,30 @@
 #hero {
-	padding: 4rem 6rem;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
-@media screen and (max-width: 640px) {
-	#hero {
-		padding: 2rem 3rem;
-	}
-}
-body {
-	font-family: 'Poppins', sans-serif;
-	background-color: #EBF5EE;
-	padding: 40px;
-
-}
 .title {
 	text-align: center;
 	font-size: 32px;
 }
+
 .description {
 	width: 60%;
-	margin-left: 20%;
 }
 
-.hero__body {
-	width : 60%;
-	margin-left: 20%;
-
-}
-
-.username{
-	width : 200px;
-	height: 40px;
-	border-radius : 10px;
-	border : 1px solid rgba(0, 0, 0, 0.205) ;
-	font-size: 15px;
-	padding-left: 10px;
+@media screen and (max-width: 640px) {
+	.description {
+		width: 90%;
+	}
 }
 
 .start{
-	width : 100px;
-	height: 40px;
+	margin-top: 20px;
+	padding: 1rem;
+	width : 200px;
 	border-radius : 10px;
-	border : 0px solid rgba(0, 0, 0, 0.205) ;
 	font-size: 15px;
 	padding-left: 10px;
 	background-color: transparent;
@@ -50,52 +33,4 @@ body {
 .start:hover {
 	background-color: #BFD1E5;
 	cursor: pointer;
-
 }
-.form {
-	text-align: center;
-}
-/* main {
-	text-align: center;
-}
-
-.cta {
-	width: 10rem;
-	margin: 0 auto;
-}
-
-.cta button,
-.cta input {
-	width: 100%;
-}
-
-.cta__new {
-}
-
-.cta__separator {
-	width: 100%;
-	display: flex;
-	align-items: center;
-	margin-top: 0.5rem;
-	margin-bottom: 0.5rem;
-	gap: 0.5rem;
-}
-
-.cta__separator span {
-}
-
-.cta__separator .bar {
-	height: 1px;
-	background-color: lightgray;
-	flex: 1;
-}
-
-.cta__separator .text {
-}
-
-.cta__join {
-}
-
-.cta__join input {
-	margin-bottom: 0.5rem;
-} */

@@ -1,11 +1,5 @@
 export default class Card {
 	constructor(card, parent = document.body) {
-		/*
-            "image": "https://deckofcardsapi.com/static/img/KH.png",
-            "value": "KING",
-            "suit": "HEARTS",
-            "code": "KH"
-        */
 		this.value = card.value;
 		this.suit = card.suit;
 		this.code = card.code;

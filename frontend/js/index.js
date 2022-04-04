@@ -1,41 +1,19 @@
 import Loader from './components/loader.js';
-import { newShuffle } from './utils/api.js';
-import {
-	generateUsername,
-	setCookie,
-	createRelativeURL,
-} from './utils/helpers.js';
+import { createRelativeURL } from './utils/helpers.js';
 
 let loader = new Loader('loader');
 
-const gameForm = document.querySelector('#game-form');
-const usernameInput = gameForm.querySelector('#username');
+const gameButton = document.querySelector('.start');
 
-const randomUsername = generateUsername();
+gameButton.onclick =  async () => {
+	loader.display();
+	let current_id = localStorage.getItem('deck_id');
 
-usernameInput.placeholder = randomUsername;
-
-gameForm.onsubmit = async (event) => {
-	event.preventDefault();
-
-	// Create table
-	try {
-		loader.display();
-
-		const { deck_id, success } = await newShuffle({ deck_count: 1 });
-
-		loader.hide();
-
-		if (!success) throw new Error('DeckOfCardError: new shuffling failed');
-
-		const storedUsername = usernameInput.value || randomUsername;
-
-		setCookie(`username=${decodeURIComponent(storedUsername)}`);
-
-		window.location.href = createRelativeURL('/table.html', {
-			deck_id,
-		});
-	} catch (err) {
-		console.log(err);
+	if(!current_id) {
+		const newDeck = await newShuffle({ deck_count: 1 });
+		let current_id = newDeck.deck_id;
+		localStorage.setItem('deck_id', current_id);
 	}
-};
+
+	window.location.href = createRelativeURL('/table.html', {current_id});
+}
