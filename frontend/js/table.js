@@ -1,29 +1,3 @@
-// import { getCookie } from './utils/helpers.js';
-// import { connect } from './utils/api.js';
-
-// const socket = connect();
-
-// // La connexion est ouverte
-// socket.addEventListener('open', function (event) {
-// 	socket.dispatchEvent(new Event(''));
-// });
-
-// // Écouter les messages
-// socket.addEventListener('message', function (event) {
-// 	console.log('Voici un message du serveur', event.data);
-// });
-
-// const greetingEl = document.querySelector('#greeting');
-
-// const username = getCookie('username');
-// const players = [username];
-
-// greetingEl.textContent = `Hello ${username} !`;
-
-// socket.addEventListener('player.join', ({ data }) => {
-// 	console.log('New player join !', data);
-// });
-
 import Card from './components/table/card.js';
 import { newShuffle, drawCard, restartGame, addToPile, checkPile } from './utils/api.js';
 import { GAME_ACTION } from './utils/constants.js';
@@ -31,21 +5,12 @@ import { GAME_ACTION } from './utils/constants.js';
 
 
 // Containers
-const deckEl = document.querySelector('#deck');
 const drawnCardsEl = document.querySelector('#drawn-cards');
-const loggerEl = document.querySelector("#logger");
-const modalEl = document.querySelector("#myModal");
-const modalLoseEl = document.querySelector("#myModalLose");
-
-var span = document.getElementsByClassName("close")[0];
-span.onclick = function() {
-	modalEl.style.display = "none";
-  }
-
-var spanLose = document.getElementsByClassName("closeLose")[0];
-  spanLose.onclick = function() {
-	  modalLoseEl.style.display = "none";
-	}
+const loggerEl = document.querySelector('#logger');
+const modalEl = document.querySelector('#myModal');
+const modalLoseEl = document.querySelector('#myModalLose');
+const spanEl = document.querySelector('.close');
+const spanLoseEl = document.querySelector('.closeLose');
 
 
 // Texts
@@ -64,11 +29,14 @@ const standBtn = document.querySelector('#stand');
 const restartBtn = document.querySelector('#restart');
 
 // Vars
-let deck_id;
+const NETWORK_ERR_MSG = 'Une erreur réseau est survenue.';
+const CANCEL_DRAW_MSG = 'Vous avez annuler le tirage.';
 const pileName = 'player';
+let deck_id;
 let player_deck = [];
 let abortCtrl;
 let lastAction;
+
 
 // Variables (Selectors and then actual variables)
 // util functions
@@ -108,7 +76,7 @@ window.onload = async function () {
 				}
 				return response;
 			})
-			.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
+			.catch((err) => updateConsoleLog());
 		
 		if(piles && piles[pileName]) {
 			const cards = piles[pileName].cards;
@@ -167,6 +135,12 @@ drawBtn.onclick = onDraw;
 cancelBtn.onclick = onCancel;
 standBtn.onclick = onStand;
 restartBtn.onclick = onRestart;
+spanEl.onclick = function() {
+	modalEl.style.display = 'none';
+}
+spanLoseEl.onclick = function() {
+	modalLoseEl.style.display = 'none';
+}
 
 /**
  * Handle keybord event for D,C,S,R,ENTER
@@ -204,7 +178,7 @@ async function onStart() {
 	localStorage.setItem('lastAction', 'start'.toUpperCase());
 
 	const { cards, remaining  } = await drawCard(deck_id, { count: 2 })
-		.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
+		.catch((err) => updateConsoleLog(NETWORK_ERR_MSG));
 	
 	if(cards) {
 		updatePlayerDeck(cards);
@@ -253,9 +227,9 @@ async function onDraw() {
 			cancelBtn.disabled = true;
 			drawBtn.disabled = false;
 			if(lastAction === GAME_ACTION.CANCEL) {
-				updateConsoleLog('Vous avez annuler le tirage.')
+				updateConsoleLog(CANCEL_DRAW_MSG);
 			} else {
-				updateConsoleLog('Une erreur réseau est survenue.')
+				updateConsoleLog(NETWORK_ERR_MSG);
 			}
 			return err;
 		});
@@ -297,7 +271,7 @@ async function onStand() {
 			window.navigator.vibrate(200);		
 			return response;
 		})
-		.catch((err) => updateConsoleLog('Une erreur réseau est survenue.'));
+		.catch((err) => updateConsoleLog(NETWORK_ERR_MSG));
 	
 	if(cards) {
 		updatePlayerDeck(cards);
@@ -349,7 +323,7 @@ async function createNewDeck() {
 	const cardCodes = [];
 
 	cards.forEach((card) => {
-		const logEntry = `Vous avez tirer la carte : ${card.value} ${card.suit}`;
+		const logEntry = `Vous avez tiré la carte : ${card.value} ${card.suit}`;
 		cardCodes.push(card.code);
 		player_deck.push(card);
 		updateConsoleLog(logEntry);
