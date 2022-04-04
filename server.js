@@ -17,19 +17,6 @@ const wss = new WebSocket.Server({ server });
 
 // Static files
 app.use('/', express.static('frontend'));
-// app.use('/js', express.static('frontend/js'));
-// app.use('/css', express.static('frontend/css'));
-
-// WebSocket
-wss.on('connection', (ws) => {
-	ws.send('hello');
-
-	ws.on('message', (message) => {
-		console.log('[CLIENT] ' + message);
-	});
-
-	console.log(wss.clients);
-});
 
 // Routes
 app.get('/status', (req, res) => {

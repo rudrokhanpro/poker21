@@ -41,3 +41,14 @@ Poker 21 is a card game that consists of getting as close as possible to a score
 
 - You cannot play without network connection.
 - You can resume your last game session if the deck is still available.
+
+### How to launch ?
+
+You will need Docker for this.
+
+If you already have Docker, you can run the following commands:
+
+1. `docker-compose build`
+2. `docker-compose up`
+
+Then you should be able to go to [http://localhost:3000/](http://localhost:3000/) in the browser.

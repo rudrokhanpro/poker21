@@ -1,8 +1,12 @@
 import Card from './components/table/card.js';
-import { newShuffle, drawCard, restartGame, addToPile, checkPile } from './utils/api.js';
+import {
+	newShuffle,
+	drawCard,
+	restartGame,
+	addToPile,
+	checkPile,
+} from './utils/api.js';
 import { GAME_ACTION } from './utils/constants.js';
-
-
 
 // Containers
 const drawnCardsEl = document.querySelector('#drawn-cards');
@@ -12,11 +16,10 @@ const modalLoseEl = document.querySelector('#myModalLose');
 const spanEl = document.querySelector('.close');
 const spanLoseEl = document.querySelector('.closeLose');
 
-
 // Texts
 const scoreEl = document.querySelector('#score');
 const remainingEl = document.querySelector('#remaining');
-const statusEl = document.querySelector('#status')
+const statusEl = document.querySelector('#status');
 
 // Inputs
 const countInput = document.querySelector('#count');
@@ -37,81 +40,80 @@ let player_deck = [];
 let abortCtrl;
 let lastAction;
 
-
 // Variables (Selectors and then actual variables)
 // util functions
 
 /**
  * Updates remaining count element's content
- * @param {string} value Score value 
+ * @param {string} value Score value
  */
- function setRemaining(value = '') {
+function setRemaining(value = '') {
 	remainingEl.textContent = value;
 }
 
 /**
  * Updates score element's content
- * @param {string} value Score value 
+ * @param {string} value Score value
  */
- function setScore(value = '') {
+function setScore(value = '') {
 	scoreEl.textContent = value;
 }
 
 // listeners
 window.onload = async function () {
 	const current_id = localStorage.getItem('deck_id');
-	
-	if(window.navigator.onLine) {
+
+	if (window.navigator.onLine) {
 		handleOnline();
 	} else {
 		handleOffline();
 	}
 
-	if(current_id) {
+	if (current_id) {
 		deck_id = current_id;
-		const { piles, remaining}  = await checkPile(deck_id, pileName)
+		const { piles, remaining } = await checkPile(deck_id, pileName)
 			.then((response) => {
-				if(response.error) {
+				if (response.error) {
 					createNewDeck();
 				}
 				return response;
 			})
 			.catch((err) => updateConsoleLog());
-		
-		if(piles && piles[pileName]) {
+
+		if (piles && piles[pileName]) {
 			const cards = piles[pileName].cards;
 			const lastSessionAction = localStorage.getItem('lastAction');
 			lastAction = GAME_ACTION[lastSessionAction];
-			
+
 			updatePlayerDeck(cards);
 			updateDrawnCards(cards);
 			setRemaining(remaining);
-			
+
 			let score = getPlayerScore();
-			if(lastAction === GAME_ACTION.STAND) {
+			if (lastAction === GAME_ACTION.STAND) {
 				let realScore = score - getCardValue(cards.pop().value);
 				setScore(realScore);
-			
-				if(score <= 21) {
+
+				if (score <= 21) {
 					handleLose();
 				} else {
 					handleWin();
 				}
 			} else {
 				setScore(score);
-				
-				if(score < 21) {
+
+				if (score < 21) {
 					drawBtn.disabled = false;
 					countInput.disabled = false;
 					standBtn.disabled = false;
-				} else if ( score === 21) {
+				} else if (score === 21) {
 					handleWin();
 				} else {
 					handleLose();
 				}
 			}
 
-			if(remaining < 50) {
+			if (remaining < 50) {
 				restartBtn.disabled = false;
 			}
 
@@ -121,11 +123,11 @@ window.onload = async function () {
 		createNewDeck();
 	}
 };
-window.addEventListener('online', function(e) { 
+window.addEventListener('online', function (e) {
 	handleOnline();
 	updateConsoleLog('La connexion a été établie.');
 });
-window.addEventListener('offline', function(e) { 
+window.addEventListener('offline', function (e) {
 	handleOffline();
 	updateConsoleLog('La connexion a été perdue.');
 });
@@ -135,39 +137,50 @@ drawBtn.onclick = onDraw;
 cancelBtn.onclick = onCancel;
 standBtn.onclick = onStand;
 restartBtn.onclick = onRestart;
-spanEl.onclick = function() {
+spanEl.onclick = function () {
 	modalEl.style.display = 'none';
-}
-spanLoseEl.onclick = function() {
+};
+spanLoseEl.onclick = function () {
 	modalLoseEl.style.display = 'none';
-}
+};
 
 /**
  * Handle keybord event for D,C,S,R,ENTER
  */
 window.addEventListener('keypress', (event) => {
-	switch(event.code) {
-		case 'KeyD' :
-			if(lastAction === GAME_ACTION.START || lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL)
+	switch (event.code) {
+		case 'KeyD':
+			if (
+				lastAction === GAME_ACTION.START ||
+				lastAction === GAME_ACTION.DRAW ||
+				lastAction === GAME_ACTION.CANCEL
+			)
 				onDraw();
 			break;
-		case 'KeyC' :
-			if(lastAction === GAME_ACTION.DRAW)
-				onCancel();
+		case 'KeyC':
+			if (lastAction === GAME_ACTION.DRAW) onCancel();
 			break;
-		case 'KeyS' :
-			if(getPlayerScore() < 21 && (lastAction === GAME_ACTION.START ||lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL))
+		case 'KeyS':
+			if (
+				getPlayerScore() < 21 &&
+				(lastAction === GAME_ACTION.START ||
+					lastAction === GAME_ACTION.DRAW ||
+					lastAction === GAME_ACTION.CANCEL)
+			)
 				onStand();
 			break;
-		case 'KeyR' :
-			if(lastAction === GAME_ACTION.DRAW || lastAction === GAME_ACTION.CANCEL || lastAction === GAME_ACTION.STAND)
+		case 'KeyR':
+			if (
+				lastAction === GAME_ACTION.DRAW ||
+				lastAction === GAME_ACTION.CANCEL ||
+				lastAction === GAME_ACTION.STAND
+			)
 				onRestart();
 			break;
-		case 'Enter' :
-			if(!lastAction || lastAction === GAME_ACTION.RESTART)
-				onStart();
+		case 'Enter':
+			if (!lastAction || lastAction === GAME_ACTION.RESTART) onStart();
 			break;
-		default :
+		default:
 			break;
 	}
 });
@@ -177,21 +190,22 @@ async function onStart() {
 	lastAction = GAME_ACTION.START;
 	localStorage.setItem('lastAction', 'start'.toUpperCase());
 
-	const { cards, remaining  } = await drawCard(deck_id, { count: 2 })
-		.catch((err) => updateConsoleLog(NETWORK_ERR_MSG));
-	
-	if(cards) {
+	const { cards, remaining } = await drawCard(deck_id, { count: 2 }).catch(
+		(err) => updateConsoleLog(NETWORK_ERR_MSG)
+	);
+
+	if (cards) {
 		updatePlayerDeck(cards);
 		updateDrawnCards(cards);
 		setRemaining(remaining);
 		setScore(getPlayerScore());
-		
+
 		startBtn.disabled = true;
 		drawBtn.disabled = false;
 		countInput.disabled = false;
 		standBtn.disabled = false;
 
-		if(remaining === '0') {
+		if (remaining === '0') {
 			drawBtn.disabled = true;
 			restartBtn.disabled = false;
 		}
@@ -210,23 +224,23 @@ async function onDraw() {
 	drawBtn.disabled = true;
 	cancelBtn.disabled = false;
 	abortCtrl = new AbortController();
-	
+
 	const { value: count } = countInput;
 	const { cards, remaining } = await drawCard(deck_id, { count }, abortCtrl)
 		.then((response) => {
 			drawBtn.disabled = false;
 			cancelBtn.disabled = true;
 			restartBtn.disabled = false;
-			window.navigator.vibrate(200);		
+			window.navigator.vibrate(200);
 			return response;
 		})
 		.catch((err) => {
-			if(player_deck.length > 2) {
+			if (player_deck.length > 2) {
 				restartBtn.disabled = false;
 			}
 			cancelBtn.disabled = true;
 			drawBtn.disabled = false;
-			if(lastAction === GAME_ACTION.CANCEL) {
+			if (lastAction === GAME_ACTION.CANCEL) {
 				updateConsoleLog(CANCEL_DRAW_MSG);
 			} else {
 				updateConsoleLog(NETWORK_ERR_MSG);
@@ -234,18 +248,18 @@ async function onDraw() {
 			return err;
 		});
 
-	if(cards) {
+	if (cards) {
 		updatePlayerDeck(cards);
 		updateDrawnCards(cards);
 		setRemaining(remaining);
 
 		const score = getPlayerScore();
-		setScore(score);			
+		setScore(score);
 
-		if(remaining === '0') {
+		if (remaining === '0') {
 			drawBtn.disabled = true;
 		}
-		
+
 		if (score === 21) {
 			handleWin();
 		} else if (score > 21) {
@@ -268,19 +282,19 @@ async function onStand() {
 
 	const { cards, remaining } = await drawCard(deck_id, { count: 1 })
 		.then((response) => {
-			window.navigator.vibrate(200);		
+			window.navigator.vibrate(200);
 			return response;
 		})
 		.catch((err) => updateConsoleLog(NETWORK_ERR_MSG));
-	
-	if(cards) {
+
+	if (cards) {
 		updatePlayerDeck(cards);
 		updateDrawnCards(cards);
 		setRemaining(remaining);
-		
+
 		const score = getPlayerScore();
-	
-		if(score > 21) {
+
+		if (score > 21) {
 			handleWin();
 		} else {
 			handleLose();
@@ -293,14 +307,14 @@ async function onRestart() {
 	localStorage.setItem('lastAction', 'restart'.toUpperCase());
 
 	await restartGame(deck_id);
-	
+
 	startBtn.disabled = false;
 	countInput.disabled = true;
-    drawBtn.disabled = true;
-    standBtn.disabled = true;
+	drawBtn.disabled = true;
+	standBtn.disabled = true;
 	restartBtn.disabled = true;
 	player_deck.length = 0;
-	
+
 	setScore('0');
 	setRemaining('');
 	removeDrawnCards();
@@ -319,7 +333,7 @@ async function createNewDeck() {
  * Add cards to player's pile
  * @param {*} cards Array of cards
  */
- async function updatePlayerDeck(cards) {
+async function updatePlayerDeck(cards) {
 	const cardCodes = [];
 
 	cards.forEach((card) => {
@@ -334,9 +348,9 @@ async function createNewDeck() {
 
 /**
  * Display given cards in the drawn cards container
- * @param {*} cards 
+ * @param {*} cards
  */
- function updateDrawnCards(cards) {
+function updateDrawnCards(cards) {
 	cards.forEach((card) => {
 		new Card(card, drawnCardsEl).display();
 	});
@@ -345,7 +359,7 @@ async function createNewDeck() {
 /**
  * Remove every displayed cards in the drawn cards container
  */
- function removeDrawnCards() {
+function removeDrawnCards() {
 	drawnCardsEl.replaceChildren();
 }
 
@@ -353,7 +367,7 @@ async function createNewDeck() {
  * Add a new log entry in the console container
  * @param {*} text
  */
- function updateConsoleLog(text) {
+function updateConsoleLog(text) {
 	const log = document.createElement('div');
 	log.textContent = text;
 	loggerEl.appendChild(log);
@@ -363,7 +377,7 @@ async function createNewDeck() {
 function handleWin() {
 	window.navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
 	updateConsoleLog('Vous avez gagné !');
-	delay(1100).then(() => modalEl.style.display = "block");
+	delay(1100).then(() => (modalEl.style.display = 'block'));
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
@@ -375,7 +389,7 @@ function handleWin() {
 function handleLose() {
 	window.navigator.vibrate([1000]);
 	updateConsoleLog('Vous avez perdu.');
-	delay(1000).then(() => modalLoseEl.style.display = "block");
+	delay(1000).then(() => (modalLoseEl.style.display = 'block'));
 
 	countInput.disabled = true;
 	drawBtn.disabled = true;
@@ -394,12 +408,12 @@ function getPlayerScore() {
 /**
  * Returns a card numeric value according to it's value
  * @param {string} value Card value
- * @returns 
+ * @returns
  */
 function getCardValue(value) {
-	switch(value) {
+	switch (value) {
 		case 'KING':
-		case 'QUEEN': 
+		case 'QUEEN':
 		case 'JACK':
 		case '0':
 			return 10;
@@ -421,5 +435,5 @@ function handleOffline() {
 }
 
 function delay(time) {
-	return new Promise(resolve => setTimeout(resolve, time));
-  }
+	return new Promise((resolve) => setTimeout(resolve, time));
+}
